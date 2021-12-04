@@ -270,13 +270,13 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 
 mixin MathsMixin {
   double computeVerticalPoint(double sectorLength, double radius) {
-    final angle = (sectorLength + 90) * math.pi / 180;
+    final angle = convertToRadian(sectorLength + 90);
 
     return radius * math.cos(angle);
   }
 
   double computeHorizontalPoint(double sectorLength, double radius) {
-    final angle = (sectorLength + 90) * math.pi / 180;
+    final angle = convertToRadian(sectorLength + 90);
 
     return -radius * math.sin(angle);
   }
@@ -288,6 +288,10 @@ mixin MathsMixin {
   double interpolate(
       {required double start, required double end, int index = 1}) {
     return ((start + end) - end) * index;
+  }
+
+  double convertToRadian(double degree) {
+    return degree * math.pi / 180;
   }
 
   double ratio(double value) => value / numberOfPoints;
