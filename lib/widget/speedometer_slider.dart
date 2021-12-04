@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
@@ -8,11 +9,18 @@ import 'package:flutter/widgets.dart';
 const int numberOfPoints = 30;
 
 class CustomSlider extends LeafRenderObjectWidget {
-  const CustomSlider({Key? key}) : super(key: key);
+  final MaterialColor? speedometerColor;
+  const CustomSlider({Key? key, this.speedometerColor}) : super(key: key);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderCustomSlider();
+    return _RenderCustomSlider(color: speedometerColor);
+  }
+
+  @override
+  void updateRenderObject(
+      BuildContext context, covariant _RenderCustomSlider renderObject) {
+    renderObject.color = speedometerColor;
   }
 }
 
@@ -25,13 +33,25 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
   late final TapGestureRecognizer tapGestureRecognizer;
   double pointerPoint = numberOfPoints / 2;
 
-  _RenderCustomSlider()
+  _RenderCustomSlider({MaterialColor? color})
       : super(textDirection: TextDirection.ltr, alignment: Alignment.center) {
     dragGestureRecognizer = PanGestureRecognizer()
       ..onStart = _dragStart
       ..onEnd = _dragEnd
       ..onUpdate = _dragUpdate;
     tapGestureRecognizer = TapGestureRecognizer()..onTapDown = _tapDown;
+    _color = color;
+  }
+
+  MaterialColor? _color;
+
+  MaterialColor? get color => _color;
+
+  set color(MaterialColor? color) {
+    if (_color == color) return;
+
+    _color = color;
+    markNeedsPaint();
   }
 
   @override
@@ -109,6 +129,7 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
       Offset.zero & size,
       (context, offset) {
         final canvas = context.canvas;
+        log("OFFSET =============== $offset");
         canvas.translate(
             (size.width / 2) + offset.dx, (size.height / 2) + offset.dy);
 
@@ -116,7 +137,7 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 
         _drawPointer(radius, canvas);
 
-        _drawTracker(canvas);
+        _drawSlider(canvas);
       },
     );
   }
@@ -128,18 +149,19 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
     double radius,
   ) {
     for (int i = 0; i < numberOfPoints + 1; i++) {
-      final angle = (unitArc * i);
+      final sectorLength = (unitArc * i);
 
       final tickLength = (size.width) * (i % 5 == 0 ? .15 : .08);
 
       final Offset startPosition = Offset(
-          computeHorizontalPoint(angle, radius - tickLength),
-          computeVerticalPoint(angle, radius - tickLength));
+          computeHorizontalPoint(sectorLength, radius - tickLength),
+          computeVerticalPoint(sectorLength, radius - tickLength));
 
-      final Offset endPosition = Offset(computeHorizontalPoint(angle, radius),
-          computeVerticalPoint(angle, radius));
+      final Offset endPosition = Offset(
+          computeHorizontalPoint(sectorLength, radius),
+          computeVerticalPoint(sectorLength, radius));
 
-      final colorRatio = colorWithRatio(pointerPoint);
+      final colorRatio = colorWithRatio(pointerPoint, majorColor: _color);
       canvas.drawLine(
         endPosition,
         startPosition,
@@ -191,7 +213,7 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
     );
   }
 
-  void _drawTracker(Canvas canvas) {
+  void _drawSlider(Canvas canvas) {
     var curveRadius = const Radius.circular(30);
 
     final topMargin = size.height * .2;
@@ -210,7 +232,7 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
           bottomRight: curveRadius,
         ),
       );
-    final colorRatio = colorWithRatio(pointerPoint);
+    final colorRatio = colorWithRatio(pointerPoint, majorColor: _color);
 
     canvas.drawPath(
       _trackerPath,
@@ -247,16 +269,16 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 }
 
 mixin MathsMixin {
-  double computeVerticalPoint(double angle, double radius) {
-    angle = (angle - 90) * math.pi / 180;
+  double computeVerticalPoint(double sectorLength, double radius) {
+    final angle = (sectorLength + 90) * math.pi / 180;
 
-    return -radius * math.cos(angle);
+    return radius * math.cos(angle);
   }
 
-  double computeHorizontalPoint(double angle, double radius) {
-    angle = (angle - 90) * math.pi / 180;
+  double computeHorizontalPoint(double sectorLength, double radius) {
+    final angle = (sectorLength + 90) * math.pi / 180;
 
-    return radius * math.sin(angle);
+    return -radius * math.sin(angle);
   }
 
   double pointFromRadius(double radius) {
@@ -270,25 +292,27 @@ mixin MathsMixin {
 
   double ratio(double value) => value / numberOfPoints;
 
-  ColorsRatio colorWithRatio(double value) {
+  ColorsRatio colorWithRatio(double value, {MaterialColor? majorColor}) {
     return ColorsRatio(
       colors: List.generate(
         numberOfPoints,
         (index) {
           final indexRatio = ratio(index.toDouble());
           bool isPassedPoint = value >= index;
-          Color color = Colors.redAccent;
+          majorColor = majorColor ?? Colors.red;
+
+          Color color = majorColor!;
 
           const startRatio = 7 / numberOfPoints;
           const midRatio = 20 / numberOfPoints;
           const endRatio = 25 / numberOfPoints;
 
           if (indexRatio <= startRatio) {
-            color = Colors.red[300]!;
+            color = majorColor![300]!;
           } else if (indexRatio > startRatio && indexRatio <= midRatio) {
-            color = Colors.red[400]!;
+            color = majorColor![400]!;
           } else {
-            color = Colors.red[900]!;
+            color = majorColor![900]!;
           }
 
           return isPassedPoint ? color : Colors.grey;
