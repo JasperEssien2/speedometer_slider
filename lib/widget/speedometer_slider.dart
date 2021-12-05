@@ -82,9 +82,6 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 
   @override
   void handleEvent(PointerEvent event, covariant HitTestEntry entry) {
-    knobPosition =
-        event.localPosition.translate(-(size.width / 2), -(size.height / 2));
-
     if (event is PointerDownEvent) {
       tapGestureRecognizer.addPointer(event);
       dragGestureRecognizer.addPointer(event);
@@ -101,20 +98,27 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
     final position = details.localPosition;
 
     if (_notWithinBound(position)) return;
-
-    pointerPoint = pointFromRadius(position.dx);
+    _updateKnobAndPointerPosition(position);
 
     markNeedsPaint();
   }
 
   void _tapDown(TapDownDetails details) {
     if (_notWithinBound(details.localPosition)) return;
-    pointerPoint = pointFromRadius(details.localPosition.dx);
+
+    _updateKnobAndPointerPosition(details.localPosition);
+
     markNeedsPaint();
   }
 
   bool _notWithinBound(Offset position) =>
       position.dx > size.width || position.dx < 0;
+
+  void _updateKnobAndPointerPosition(Offset position) {
+    knobPosition = position.translate(-(size.width / 2), -(size.height / 2));
+
+    pointerPoint = pointFromRadius(position.dx);
+  }
 
   @override
   void paint(PaintingContext context, Offset offset) {
