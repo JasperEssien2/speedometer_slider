@@ -218,10 +218,9 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 
     final topMargin = size.height * .2;
 
-    var radius = -size.width / 2;
+    var radius = size.width / 2;
 
     _trackerPath = _trackerPath
-      ..moveTo(radius, topMargin)
       ..addRRect(
         RRect.fromRectAndCorners(
           Rect.fromPoints(
@@ -271,6 +270,7 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 }
 
 mixin MathsMixin {
+   
   double computeVerticalPoint(double sectorLength, double radius) {
     final angle = convertToRadian(sectorLength + 90);
 
