@@ -86,8 +86,6 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
       tapGestureRecognizer.addPointer(event);
       dragGestureRecognizer.addPointer(event);
     }
-
-    markNeedsPaint();
   }
 
   void _dragStart(DragStartDetails details) {}
