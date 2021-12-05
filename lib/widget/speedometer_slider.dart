@@ -27,7 +27,7 @@ class CustomSlider extends LeafRenderObjectWidget {
 const unitArc = 180 / numberOfPoints;
 
 class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
-  final _trackerPath = Path();
+  var _trackerPath = Path();
   Offset knobPosition = const Offset(0, 0);
   late final DragGestureRecognizer dragGestureRecognizer;
   late final TapGestureRecognizer tapGestureRecognizer;
@@ -218,13 +218,15 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 
     final topMargin = size.height * .2;
 
-    _trackerPath
-      ..moveTo(-size.width, topMargin)
+    var radius = -size.width / 2;
+
+    _trackerPath = _trackerPath
+      ..moveTo(radius, topMargin)
       ..addRRect(
         RRect.fromRectAndCorners(
           Rect.fromPoints(
-            Offset(-size.width, topMargin + 10),
-            Offset(size.width, topMargin),
+            Offset(-radius, topMargin + 10),
+            Offset(radius, topMargin),
           ),
           topLeft: curveRadius,
           topRight: curveRadius,
