@@ -75,11 +75,8 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
   @override
   bool hitTestSelf(Offset position) {
     var radius = (size.width / 2);
-    position = position.translate(-radius, -(size.height / 2)).scale(1, 1);
+    position = position.translate(-radius, -(size.height / 2));
 
-    if (position.dx > radius || position.dx < -radius) {
-      return false;
-    }
     return _trackerPath.contains(position);
   }
 
@@ -88,7 +85,7 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
     knobPosition =
         event.localPosition.translate(-(size.width / 2), -(size.height / 2));
 
-    if (event is PointerDownEvent && _trackerPath.contains(knobPosition)) {
+    if (event is PointerDownEvent) {
       tapGestureRecognizer.addPointer(event);
       dragGestureRecognizer.addPointer(event);
     }
@@ -270,7 +267,6 @@ class _RenderCustomSlider extends RenderAligningShiftedBox with MathsMixin {
 }
 
 mixin MathsMixin {
-   
   double computeVerticalPoint(double sectorLength, double radius) {
     final angle = convertToRadian(sectorLength + 90);
 
